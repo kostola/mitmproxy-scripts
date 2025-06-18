@@ -22,13 +22,14 @@ def extract_urls_from_file(path, strip_query=False, filter_expr=None, show_metho
                     if strip_query:
                         url = urlsplit(url)._replace(query="").geturl()
                     method = flow.request.method.upper()
-                    entry = f"{method} {url}" if show_method else url
-                    entries.add(entry)
+                    entries.add((url, method))
         except Exception as e:
             print(f"Error reading flow file: {e}")
             return
-        for entry in sorted(entries):
-            print(entry)
+
+        # Sort by URL only
+        for url, method in sorted(entries, key=lambda x: x[0]):
+            print(f"{method} {url}" if show_method else url)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extract URLs from mitmproxy dump file.")
