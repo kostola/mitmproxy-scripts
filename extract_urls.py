@@ -3,16 +3,19 @@
 
 from mitmproxy.io import FlowReader
 from mitmproxy import http
-import sys
+from urllib.parse import urlsplit
 
-def extract_urls_from_file(path):
+def extract_urls_from_file(path, strip_query=False):
     with open(path, "rb") as f:
         reader = FlowReader(f)
         urls = set()
         try:
             for flow in reader.stream():
                 if isinstance(flow, http.HTTPFlow):
-                    urls.add(flow.request.pretty_url)
+                    url = flow.request.pretty_url
+                    if strip_query:
+                        url = urlsplit(url)._replace(query="").geturl()
+                    urls.add(url)
         except Exception as e:
             print(f"Error reading flow file: {e}")
             return
@@ -20,7 +23,11 @@ def extract_urls_from_file(path):
             print(url)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python extract_urls.py path_to_dump_file")
-    else:
-        extract_urls_from_file(sys.argv[1])
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Extract URLs from mitmproxy dump file.")
+    parser.add_argument("dump_file", help="Path to mitmproxy dump file (e.g., .mitm or .dump)")
+    parser.add_argument("--strip-query", action="store_true", help="Remove query parameters from URLs")
+
+    args = parser.parse_args()
+    extract_urls_from_file(args.dump_file, strip_query=args.strip_query)
