@@ -31,8 +31,8 @@ def extract_urls_from_file(path, strip_query=False, filter_expr=None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extract URLs from mitmproxy dump file.")
     parser.add_argument("dump_file", help="Path to mitmproxy dump file (e.g., .mitm or .dump)")
-    parser.add_argument("--strip-query", action="store_true", help="Remove query parameters from URLs")
-    parser.add_argument("--filter", help="mitmproxy filter expression (e.g., '~u example.com')")
+    parser.add_argument("-s", "--strip-query", action="store_true", help="Remove query parameters from URLs")
+    parser.add_argument("-f", "--filter", help="mitmproxy filter expression (e.g., '~u example.com')")
 
     args = parser.parse_args()
     extract_urls_from_file(args.dump_file, strip_query=args.strip_query, filter_expr=args.filter)
