@@ -1,0 +1,29 @@
+[
+  {
+    "filter": "~d example.com",
+    "delay_ms": 1000
+  },
+  {
+    "filter": "~d broken.test.com",
+    "fail": true
+  },
+  {
+    "filter": "~d api.test.com",
+    "fail": true,
+    "fail_status_code": 404,
+    "fail_content_type": "application/json",
+    "fail_body": "{\"error\": \"Not Found\", \"message\": \"The requested resource could not be found\"}"
+  },
+  {
+    "filter": "~d slow.example.com",
+    "delay_ms": 5000,
+    "fail": true,
+    "fail_status_code": 503,
+    "fail_content_type": "text/html",
+    "fail_body": "<html><body><h1>Service Unavailable</h1><p>The service is temporarily unavailable.</p></body></html>"
+  },
+  {
+    "filter": "~d auth.example.com",
+    "drop": true
+  }
+]
