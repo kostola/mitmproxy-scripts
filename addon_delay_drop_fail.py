@@ -4,11 +4,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class DelayOrDrop:
+class DelayDropFail:
     def __init__(self):
         self.filter_expr = ""
         self.delay_ms = 0  # delay in milliseconds
         self.drop = False
+        self.fail = False
         self.filter = None
 
     def load(self, loader):
@@ -30,19 +31,26 @@ class DelayOrDrop:
             default=False,
             help="Whether to drop matching requests."
         )
+        loader.add_option(
+            name="dd_fail",
+            typespec=bool,
+            default=False,
+            help="Whether to fail matching requests."
+        )
 
     def configure(self, updated):
         self.filter_expr = ctx.options.dd_filter
         self.delay_ms = ctx.options.dd_delay
         self.drop = ctx.options.dd_drop
+        self.fail = ctx.options.dd_fail
 
         try:
             self.filter = flowfilter.parse(self.filter_expr)
-        except flowfilter.ParseException as e:
-            logger.error(f"[DelayOrDrop] Invalid filter expression: {e}")
+        except ValueError as e:
+            logger.error(f"[DelayDropFail] Invalid filter expression: {e}")
             self.filter = None
         else:
-            logger.info(f"[DelayOrDrop] Configured with filter: '{self.filter_expr}', delay: {self.delay_ms}ms, drop: {self.drop}")
+            logger.info(f"[DelayDropFail] Configured with filter: '{self.filter_expr}', delay: {self.delay_ms}ms, drop: {self.drop}, fail: {self.fail}")
 
     async def request(self, flow: http.HTTPFlow):
         if not self.filter:
@@ -50,14 +58,18 @@ class DelayOrDrop:
 
         if flowfilter.match(self.filter, flow):
             if self.drop:
-                logger.info(f"[DelayOrDrop] Dropping request: {flow.request.pretty_url}")
+                logger.info(f"[DelayDropFail] Dropping request: {flow.request.pretty_url}")
+                flow.kill()
+                return
+            if self.delay_ms > 0:
+                logger.info(f"[DelayDropFail] Delaying request: {flow.request.pretty_url} by {self.delay_ms}ms")
+                await asyncio.sleep(self.delay_ms / 1000.0)
+            if self.fail:
+                logger.info(f"[DelayDropFail] Dropping request: {flow.request.pretty_url}")
                 flow.response = http.Response.make(
-                    418,
-                    b"Request dropped by filter_delay_drop addon.",
+                    500,
+                    b"Internal Server Error",
                     {"Content-Type": "text/plain"}
                 )
-            elif self.delay_ms > 0:
-                logger.info(f"[DelayOrDrop] Delaying request: {flow.request.pretty_url} by {self.delay_ms}ms")
-                await asyncio.sleep(self.delay_ms / 1000.0)
 
-addons = [DelayOrDrop()]
+addons = [DelayDropFail()]
