@@ -44,3 +44,10 @@ mitmproxy -s <addon_file> [<parameters>]
     * `dd_delay`: integer value that represents the delay in milliseconds
     * `dd_drop`: boolean value (`true`/`false`) that tells the addon to drop connection. It has priority over `dd_delay`.
   * Example usage: `mitmweb -s addon_delay_drop.py --set dd_filter='~m POST ~u api.example.com' --set dd_delay=10000`
+
+* [addons_delay_drop_fail_file.py](addons_delay_drop_fail_file.py) delays, drops or fails certain connections.
+  * It supports multiple rules that are loaded from a JSON file. An [example file](rules.example.json) is provided.
+    * The file is dynamically reloaded if changed
+  * It requires a parameter:
+    * `dd_rules_file`: path to file containing rules.
+  * Example usage: `mitmweb -s addon_delay_drop_fail_file.py --set dd_rules_file=$PWD/rules.json`
