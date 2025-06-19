@@ -38,11 +38,12 @@ mitmproxy -s <addon_file> [<parameters>]
 
 ### List of mitmproxy addons
 
-* [addons_delay_drop.py](addons_delay_drop.py) delays or drop certain connections.
+* [addons_delay_drop_fail.py](addons_delay_drop_fail.py) delays, drop or fails certain connections.
   * It supports several parameters:
-    * `dd_filter`: [filter expression](https://docs.mitmproxy.org/stable/concepts/filters/) to match requests
+    * `dd_filter`: mandatory [filter expression](https://docs.mitmproxy.org/stable/concepts/filters/) to match requests
     * `dd_delay`: integer value that represents the delay in milliseconds
-    * `dd_drop`: boolean value (`true`/`false`) that tells the addon to drop connection. It has priority over `dd_delay`.
+    * `dd_drop`: boolean value (`true`/`false`) that tells the addon to drop connection. It has priority over `dd_delay` and `dd_fail`.
+    * `dd_fail`: boolean value (`true`/`false`) that tells the addon to fail connection with error 500. It can be combined with `dd_delay`.
   * Example usage: `mitmweb -s addon_delay_drop.py --set dd_filter='~m POST ~u api.example.com' --set dd_delay=10000`
 
 * [addons_delay_drop_fail_file.py](addons_delay_drop_fail_file.py) delays, drops or fails certain connections.
